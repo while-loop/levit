@@ -1,0 +1,24 @@
+syntax = "proto3";
+
+package users;
+
+option java_multiple_files = true;
+option java_package = "com.github.whileloop.levit.proto";
+option java_outer_classname = "Users";
+
+service Users {
+    rpc Get (GetRequest) returns (User) {}
+    rpc Update (UpdateRequest) returns (User) {}
+}
+
+message GetRequest {
+    repeated string ids = 1;
+}
+
+message UpdateRequest {
+
+}
+
+message User {
+
+}
