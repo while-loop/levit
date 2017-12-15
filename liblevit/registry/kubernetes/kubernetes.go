@@ -6,6 +6,7 @@ import (
 
 
 // def implementation is kubernetes
+// TODO switch def impl from Stub to kubernetes
 func New() registry.Registry {
-	return registry.New()
+	return nil
 }
