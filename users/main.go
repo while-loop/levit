@@ -1,42 +1,23 @@
 package main
 
 import (
-	"flag"
-	"fmt"
-	"net"
-
-	"github.com/while-loop/levit/log"
-	"github.com/while-loop/levit/service"
-	"google.golang.org/grpc/reflection"
-)
-
-const (
-	Version = "1"
-	Name    = "levit.users"
+	"github.com/while-loop/levit/users/proto"
+	"google.golang.org/grpc"
+	"github.com/while-loop/levit/liblevit/log"
+	"context"
 )
 
 func main() {
-	version := flag.Bool("v", false, Name+" version")
-	laddr := *flag.String("laddr", ":8080", "binding address")
-	flag.Parse()
-
-	if *version {
-		fmt.Printf("%s version %s\n", Name, Version)
-		return
-	}
-
-	lis, err := net.Listen("tcp", laddr)
+	conn, err := grpc.Dial("localhost:8080", grpc.WithInsecure())
 	if err != nil {
-		log.Fatalf("failed to listen: %v", err)
+		log.Fatal(err)
 	}
 
-	rpc := service.NewRpcServer()
-	service.Start(nil, rpc)
-	// Register reflection service on gRPC server.
-	reflection.Register(rpc)
+	c:= users.NewUsersClient(conn)
 
-	log.Info("Running gRPC Server", lis.Addr())
-	if err := rpc.Serve(lis); err != nil {
-		log.Fatalf("failed to serve: %v", err)
-	}
+	resp, err :=c.Get(context.TODO(),&users.GetRequest{
+		Ids:[]uint64{1},
+	})
+
+	log.Infof("%v", resp)
 }

@@ -8,17 +8,13 @@ option java_outer_classname = "Users";
 
 service Users {
     rpc Get (GetRequest) returns (User) {}
-    rpc Update (UpdateRequest) returns (User) {}
+    rpc Update (User) returns (User) {}
 }
 
 message GetRequest {
-    repeated string ids = 1;
-}
-
-message UpdateRequest {
-
+    repeated uint64 ids = 1;
 }
 
 message User {
-
+    string firstName=1;
 }
