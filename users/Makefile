@@ -20,5 +20,8 @@ ci: get test
 build:
 	docker build -t ${IMAGE_NAME} .
 
+build-nc:
+	docker build --no-cache -t ${IMAGE_NAME} .
+
 deploy:
 	docker push ${IMAGE_NAME}
