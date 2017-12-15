@@ -13,7 +13,7 @@ Social media platform created in Go.
   <a href="https://travis-ci.org/while-loop/levit"><img src="https://img.shields.io/travis/while-loop/levit.svg?style=flat-square"></a>
   <a href="https://github.com/while-loop/levit/releases"><img src="https://img.shields.io/github/release/while-loop/levit.svg?style=flat-square"></a>
   <a href="https://coveralls.io/github/while-loop/levit"><img src="https://img.shields.io/coveralls/while-loop/levit.svg?style=flat-square"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPLv3-blue.svg?style=flat-square"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-Apache 2.0-blue.svg?style=flat-square"></a>
 </p>
 
 Dependencies (dev)
