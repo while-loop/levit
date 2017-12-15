@@ -2,33 +2,37 @@ package main
 
 import (
 	"flag"
-	"fmt"
 
+	"github.com/while-loop/levit/common/log"
+	"github.com/while-loop/levit/common/registry"
+	libservice "github.com/while-loop/levit/common/service"
 	proto "github.com/while-loop/levit/users/proto"
+	"github.com/while-loop/levit/users/repo"
 	"github.com/while-loop/levit/users/service"
-	"github.com/while-loop/levit/users/config"
-	"github.com/while-loop/levit/liblevit/registry"
-	"github.com/while-loop/levit/liblevit/registry/stub"
-	libservice "github.com/while-loop/levit/liblevit/service"
-	"github.com/while-loop/levit/liblevit/log"
+	"github.com/while-loop/levit/users/version"
 )
 
+func init() {
+	log.Infof("%s %s %s %s", version.Name, version.Version, version.BuildTime, version.Commit)
+}
+
 func main() {
-	version := flag.Bool("v", false, config.Name+" version")
+	v := flag.Bool("v", false, version.Name+" version")
 	flag.Parse()
 
-	if *version {
-		fmt.Printf("%s version %s\n", config.Name, config.Version)
+	if *v {
+		// version is printed in init()
 		return
 	}
 
-	registry.Use(stub.New())
+	registry.Use(registry.NewStub())
+
 	rpc := libservice.NewGrpcService(libservice.Options{
-		ServiceName:    config.Name,
-		ServiceVersion: config.Version,
+		ServiceName:    version.Name,
+		ServiceVersion: version.Version,
 		MetricsAddr:    ":8181",
 	})
 
-	proto.RegisterUsersServer(rpc.GrpcServer(), service.New())
+	proto.RegisterUsersServer(rpc.GrpcServer(), service.New(repo.NewMockRepo()))
 	log.Fatal(rpc.Serve())
 }

@@ -1,15 +1,16 @@
 package service
 
 import (
-	"google.golang.org/grpc"
-	"github.com/grpc-ecosystem/go-grpc-prometheus"
-	"github.com/while-loop/levit/liblevit/log"
 	"net"
-	"time"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"net/http"
-	"github.com/while-loop/levit/liblevit/registry"
+	"time"
+
 	"github.com/google/uuid"
+	"github.com/grpc-ecosystem/go-grpc-prometheus"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
+	"github.com/while-loop/levit/common/log"
+	"github.com/while-loop/levit/common/registry"
+	"google.golang.org/grpc"
 )
 
 var _ Service = &grpcService{}
@@ -57,8 +58,9 @@ func (s *grpcService) Serve() error {
 		lis, err = net.Listen("tcp", laddr)
 	}
 
-	log.Info("Running UsersService gRPC Server", laddr)
+	log.Info("Running UsersService gRPC Server ", laddr)
 	srv := s.regService()
+
 	err = registry.Register(srv)
 	for err != nil {
 		log.Errorf("failed to register %s: %v", s.options.ServiceName, err)

@@ -1,19 +1,19 @@
-package stub
+package registry
 
 import (
-	"github.com/while-loop/levit/liblevit/registry"
-	"fmt"
+	"github.com/while-loop/levit/common/log"
 )
 
 type stubReg struct {
-	services map[string]registry.Service
+	services map[string]Service
 }
 
-func New() registry.Registry {
-	return &stubReg{services: map[string]registry.Service{}}
+func NewStub() Registry {
+	log.Info("Running stub registry")
+	return &stubReg{services: map[string]Service{}}
 }
 
-func (s *stubReg) Register(srv registry.Service) error {
+func (s *stubReg) Register(srv Service) error {
 	srvKey := key(srv)
 
 	if _, exists := s.services[srvKey]; !exists {
@@ -27,7 +27,7 @@ func (s *stubReg) Register(srv registry.Service) error {
 	return nil
 }
 
-func (s *stubReg) Deregister(srv registry.Service) error {
+func (s *stubReg) Deregister(srv Service) error {
 	srvKey := key(srv)
 	if _, exists := s.services[srvKey]; !exists {
 		return nil
@@ -44,8 +44,8 @@ func (s *stubReg) Deregister(srv registry.Service) error {
 	return nil
 }
 
-func (s *stubReg) GetServices() ([]registry.Service, error) {
-	srvs := make([]registry.Service, 0)
+func (s *stubReg) GetServices() ([]Service, error) {
+	srvs := make([]Service, 0)
 	for _, srv := range s.services {
 		srvs = append(srvs, srv)
 	}
@@ -53,21 +53,21 @@ func (s *stubReg) GetServices() ([]registry.Service, error) {
 	return srvs, nil
 }
 
-func (s *stubReg) GetService(serviceName, version string) (registry.Service, error) {
-	err := fmt.Errorf("dne")
+func (s *stubReg) GetService(serviceName, version string) (Service, error) {
+	err := ErrServiceDNE
 	for _, srv := range s.services {
 		if srv.Name == serviceName && srv.Version == version {
 			return srv, nil
 		}
 	}
 
-	return registry.Service{}, err
+	return Service{}, err
 }
 
 func (s *stubReg) Name() string {
 	return "stub"
 }
 
-func key(service registry.Service) string {
+func key(service Service) string {
 	return service.Name + "-" + service.Version
 }

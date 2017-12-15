@@ -1,49 +1,54 @@
-package service
+package repo
 
 import (
 	"fmt"
 	"testing"
 	"time"
 
-	"context"
-
 	"github.com/stretchr/testify/require"
 	proto "github.com/while-loop/levit/users/proto"
-	"github.com/while-loop/levit/users/repo"
 )
 
-var c = context.Background()
-
-func TestUsersService(t *testing.T) {
+func TestMockRepo_CRUD(t *testing.T) {
 	a := require.New(t)
-	srvc := New(repo.NewMockRepo())
+	m := NewMockRepo()
 
 	u := createUser(1)
-	updated, err := srvc.Create(c, u)
+	updated, err := m.CreateUser(u)
 	a.NoError(err)
 	a.Equal(u, updated)
 
 	u2 := createUser(2)
-	updated2, err := srvc.Create(c, u2)
+	updated2, err := m.CreateUser(u2)
 	a.NoError(err)
 	a.Equal(u2, updated2)
 
-	us, err := srvc.GetAll(c, &proto.GetRequest{Ids: []uint64{1, 2}})
+	us, err := m.GetUsers(1, 2)
 	a.NoError(err)
-	a.Len(us.Users, 2)
+	a.Len(us, 2)
 
 	u2.First = "first3"
-	updated3, err := srvc.Update(c, u2)
+	updated3, err := m.UpdateUser(u2)
 	a.NoError(err)
 	a.Equal(u2, updated3)
 
-	newUser, err := srvc.Get(c, &proto.GetRequest{Ids: []uint64{2}})
+	a.NoError(m.DeleteUser(1))
+	us, err = m.GetUsers(1, 2)
+	a.NoError(err)
+	a.Len(us, 1)
+	a.Equal(us[0].First, "first3")
+
+	newUser, err := m.GetUser(2)
 	a.NoError(err)
 	a.NotEqual(newUser.Id, 0)
 
-	get2, err := srvc.Get(c, &proto.GetRequest{Ids: []uint64{2}})
+	a.NoError(m.DeleteUser(2))
+	us, err = m.GetUsers(2)
 	a.NoError(err)
-	a.Equal(u2, get2)
+	a.Len(us, 0)
+
+	_, err = m.GetUser(2)
+	a.Error(err)
 }
 
 func createUser(idx uint64) *proto.User {
