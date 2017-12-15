@@ -4,7 +4,10 @@ Levit
 Social media platform created in Go.
 
 <p align="center">
-  <img src="http://via.placeholder.com/350x150">
+  <img src="assets/gopher.png"><img src="assets/plus.png">
+  <img src="assets/grpc.png"><img src="assets/plus.png">
+  <img src="assets/kubernetes.png"><img src="assets/equal.png">
+  <img src="assets/blue-heart.png">
   <br><br><br>
   <a href="https://godoc.org/github.com/while-loop/levit"><img src="https://img.shields.io/badge/godoc-reference-blue.svg?style=flat-square"></a>
   <a href="https://travis-ci.org/while-loop/levit"><img src="https://img.shields.io/travis/while-loop/levit.svg?style=flat-square"></a>
@@ -12,11 +15,6 @@ Social media platform created in Go.
   <a href="https://coveralls.io/github/while-loop/levit"><img src="https://img.shields.io/coveralls/while-loop/levit.svg?style=flat-square"></a>
   <a href="LICENSE"><img src="https://img.shields.io/badge/license-AGPLv3-blue.svg?style=flat-square"></a>
 </p>
-
-![Go](assets/gopher.png) ![plus](assets/plus.png)
-![gRPC](assets/grpc.png) ![plus](assets/plus.png)
-![Kubernetes](assets/kubernetes.png) ![plus](assets/equal.png)
-![blue heart](assets/blue-heart.png)
 
 Dependencies (dev)
 ------------------
@@ -29,7 +27,7 @@ Installation
 ------------
 
 ```bash
-$ go get -u github.com/while-loop/levit/cmd/...
+$ go get -u github.com/while-loop/levit
 ```
 
 Usage
