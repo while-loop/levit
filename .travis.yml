@@ -4,7 +4,8 @@ go:
   - 1.9
 before_install:
   - go get github.com/mattn/goveralls
-  - apt-get install make
+  - sudo apt-get -qq update
+  - sudo apt-get install -y make
 
 install:
   - make -C users/ all
