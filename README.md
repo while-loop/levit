@@ -23,19 +23,33 @@ Dependencies (dev)
 - [proto-gen-go](https://github.com/golang/protpbuf)
 ```go get github.com/golang/protobuf/protoc-gen-go```
 
-Installation
-------------
+Downloading
+-----------
 
 ```bash
 $ go get -u github.com/while-loop/levit
 ```
 
-Usage
------
+Deployment
+----------
 
-```go
+TODO k8s config
 
+```sh
+$
 ```
+
+Tech Stack
+----------
+
+- [Go](https://golang.org)
+- [gRPC](https://grpc.io)
+- [Kubernetes](https://kubernetes.io)
+- [Docker](https://www.docker.com)
+- [etcd](https://coreos.com/etcd/)
+- [go-micro](https://micro.mu)
+- [ScyllaDB](http://www.scylladb.com)
+- [MySQL](https://www.mysql.com)
 
 Changelog
 ---------
