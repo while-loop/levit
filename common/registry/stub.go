@@ -50,7 +50,3 @@ func (s *stubReg) GetService(serviceName, version string) ([]Service, error) {
 func (s *stubReg) Name() string {
 	return "stub"
 }
-
-func key(service Service) string {
-	return service.Name + "-" + service.Version
-}

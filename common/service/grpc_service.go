@@ -5,11 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/google/uuid"
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/while-loop/levit/common/log"
-	levnet "github.com/while-loop/levit/common/net"
 	"github.com/while-loop/levit/common/registry"
 	"google.golang.org/grpc"
 )
@@ -31,19 +29,7 @@ func NewGrpcService(options Options) Service {
 		metrics(rpc, options.MetricsAddr)
 	}
 
-	if options.IP == "" {
-		options.IP = levnet.GetIP()
-	}
-
-	if options.Port <= 0 {
-		options.Port = 8080
-	}
-
-	if options.TTL == 0 {
-		options.TTL = 30 * time.Second
-	}
-
-	options.UUID = uuid.New().String()
+	options.applyDefaults()
 
 	s := &grpcService{rpc,
 		options,

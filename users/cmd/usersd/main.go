@@ -4,7 +4,6 @@ import (
 	"flag"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/while-loop/levit/common/log"
 	"github.com/while-loop/levit/common/registry"
@@ -41,7 +40,6 @@ func main() {
 		ServiceName:    version.Name,
 		ServiceVersion: version.Version,
 		MetricsAddr:    ":8181",
-		TTL:            5 * time.Second,
 		IP:             parts[0],
 		Port:           int(port),
 	})
