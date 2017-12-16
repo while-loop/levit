@@ -59,16 +59,26 @@ func (s *grpcService) Serve() error {
 	}
 
 	log.Info("Running UsersService gRPC Server ", laddr)
-	srv := s.regService()
+	s.Register()
 
-	err = registry.Register(srv)
-	for err != nil {
-		log.Errorf("failed to register %s: %v", s.options.ServiceName, err)
-		time.Sleep(3 * time.Second)
-		err = registry.Register(srv)
+	exitCh := make(chan error)
+	go func() {
+		exitCh <- s.Server.Serve(lis)
+	}()
+
+	err = nil
+	for {
+		select {
+		case err = exitCh:
+			log.Info("Server has stopped serving")
+		case time.After(s.options.TTL):
+			s.Register()
+		}
 	}
 
-	return s.Server.Serve(lis)
+	s.Deregister()
+
+	return err
 }
 
 func (s *grpcService) GracefulStop() error {
@@ -79,6 +89,36 @@ func (s *grpcService) GracefulStop() error {
 	s.Server.GracefulStop()
 
 	return nil
+}
+
+func (s *grpcService) Register() {
+	srv := s.regService()
+
+	for {
+		err := registry.Register(srv)
+		if err == nil {
+			break
+		}
+
+		log.Errorf("failed to register %s: %v", s.options.ServiceName, err)
+		time.Sleep(3 * time.Second)
+		err = registry.Register(srv)
+	}
+}
+
+func (s *grpcService) Deregister() {
+	srv := s.regService()
+
+	for {
+		err := registry.Deregister(srv)
+		if err == nil {
+			break
+		}
+
+		log.Errorf("failed to deregister %s: %v", s.options.ServiceName, err)
+		time.Sleep(3 * time.Second)
+		err = registry.Deregister(srv)
+	}
 }
 
 func metrics(rpc *grpc.Server, httpAddr string) {

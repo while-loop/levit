@@ -1,6 +1,9 @@
 package service
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type Options struct {
 	IP             string
@@ -9,6 +12,7 @@ type Options struct {
 	ServiceVersion string
 	MetricsAddr    string
 	Uuid           string
+	TTL            time.Duration
 }
 
 func (o Options) laddr() string {
