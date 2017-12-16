@@ -13,17 +13,23 @@ Dependencies (dev only)
 Installation
 ------------
 
-```bash
-$ go get -u github.com/while-loop/levit/users/cmd/...
-```
-
-Usage
------
+#### Go
 
 Note: assuming `$GOPATH/bin` is in your `PATH` env variable.
 
-```sh
+```bash
+$ go get -u github.com/while-loop/levit/users/cmd/...
 $ usersd
+```
+
+#### Docker
+
+**Note**: `-laddr` needs to be your Docker host WAN/Public IP, not the container IP.
+This IP is what is advertised to other services and APIs
+
+```bash
+$ HOST_IP=`dig +short myip.opendns.com @resolver1.opendns.com`
+$ docker run levitgo/users -laddr ${HOST_IP}:8585
 ```
 
 Changelog

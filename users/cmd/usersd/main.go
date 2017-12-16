@@ -2,7 +2,8 @@ package main
 
 import (
 	"flag"
-
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/while-loop/levit/common/log"
@@ -20,11 +21,18 @@ func init() {
 
 func main() {
 	v := flag.Bool("v", false, version.Name+" version")
+	laddr := flag.String("laddr", ":8080", version.Name+" version")
 	flag.Parse()
 
 	if *v {
 		// version is printed in init()
 		return
+	}
+
+	parts := strings.Split(*laddr, ":")
+	port, err := strconv.ParseInt(parts[1], 10, 32)
+	if err != nil {
+		log.Fatal(err)
 	}
 
 	registry.Use(registry.NewEtcd())
@@ -34,6 +42,8 @@ func main() {
 		ServiceVersion: version.Version,
 		MetricsAddr:    ":8181",
 		TTL:            5 * time.Second,
+		IP:             parts[0],
+		Port:           int(port),
 	})
 
 	proto.RegisterUsersServer(rpc.GrpcServer(), service.New(repo.NewMockRepo()))

@@ -12,4 +12,7 @@ FROM alpine:latest
 COPY --from=builder /go/bin/usersd /usr/local/bin/
 RUN usersd -v
 
+EXPOSE 2379
+EXPOSE 2380
+
 ENTRYPOINT ["usersd"]
