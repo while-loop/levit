@@ -29,7 +29,7 @@ This IP is what is advertised to other services and APIs
 
 ```bash
 $ HOST_IP=`dig +short myip.opendns.com @resolver1.opendns.com`
-$ docker run levitgo/users -laddr ${HOST_IP}:8585
+$ docker run levitgo/users -laddr ${HOST_IP}:8080
 ```
 
 Changelog
