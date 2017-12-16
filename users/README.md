@@ -24,12 +24,12 @@ $ usersd
 
 #### Docker
 
-**Note**: `-laddr` needs to be your Docker host WAN/Public IP, not the container IP.
-This IP is what is advertised to other services and APIs
+**Note**: `--net=host` is needed, because usersd binds to your Docker
+host WAN/Public IP, not the container IP. This IP is what is advertised
+to other services and APIs
 
 ```bash
-$ HOST_IP=`dig +short myip.opendns.com @resolver1.opendns.com`
-$ docker run levitgo/users -laddr ${HOST_IP}:8080
+$ docker run --net=host levitgo/users
 ```
 
 Changelog
