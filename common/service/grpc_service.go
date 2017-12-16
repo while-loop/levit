@@ -9,6 +9,7 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/while-loop/levit/common/log"
+	levnet "github.com/while-loop/levit/common/net"
 	"github.com/while-loop/levit/common/registry"
 	"google.golang.org/grpc"
 )
@@ -18,14 +19,6 @@ var _ Service = &grpcService{}
 type grpcService struct {
 	*grpc.Server
 	options Options
-}
-
-func (s *grpcService) GrpcServer() *grpc.Server {
-	return s.Server
-}
-
-func (s *grpcService) Options() Options {
-	return s.options
 }
 
 func NewGrpcService(options Options) Service {
@@ -38,15 +31,32 @@ func NewGrpcService(options Options) Service {
 		metrics(rpc, options.MetricsAddr)
 	}
 
+	if options.IP == "" {
+		options.IP = levnet.GetIP()
+	}
+
 	if options.Port <= 0 {
 		options.Port = 8080
 	}
-	options.Uuid = uuid.New().String()
+
+	if options.TTL == 0 {
+		options.TTL = 30 * time.Second
+	}
+
+	options.UUID = uuid.New().String()
 
 	s := &grpcService{rpc,
 		options,
 	}
 	return s
+}
+
+func (s *grpcService) GrpcServer() *grpc.Server {
+	return s.Server
+}
+
+func (s *grpcService) Options() Options {
+	return s.options
 }
 
 func (s *grpcService) Serve() error {
@@ -67,17 +77,22 @@ func (s *grpcService) Serve() error {
 	}()
 
 	err = nil
-	for {
+	running := true
+	sig := CtrlCSig()
+	for running {
 		select {
-		case err = exitCh:
-			log.Info("Server has stopped serving")
-		case time.After(s.options.TTL):
+		case err = <-exitCh:
+			log.Info("Server has stopped serving ", err)
+		case <-time.After(s.options.TTL):
 			s.Register()
+		case <-sig:
+			log.Warn("Ctrl+C captured")
+			s.GracefulStop()
+			running = false
 		}
 	}
 
 	s.Deregister()
-
 	return err
 }
 
@@ -94,15 +109,9 @@ func (s *grpcService) GracefulStop() error {
 func (s *grpcService) Register() {
 	srv := s.regService()
 
-	for {
-		err := registry.Register(srv)
-		if err == nil {
-			break
-		}
-
+	err := registry.Register(srv)
+	if err != nil {
 		log.Errorf("failed to register %s: %v", s.options.ServiceName, err)
-		time.Sleep(3 * time.Second)
-		err = registry.Register(srv)
 	}
 }
 
@@ -139,12 +148,9 @@ func (s *grpcService) regService() registry.Service {
 	return registry.Service{
 		Version: s.options.ServiceVersion,
 		Name:    s.options.ServiceName,
-		Instances: map[string]registry.Instance{
-			s.options.Uuid: {
-				Port: s.options.Port,
-				IP:   s.options.IP,
-				UUID: s.options.Uuid,
-			},
-		},
+		UUID:    s.options.UUID,
+		Port:    s.options.Port,
+		IP:      s.options.IP,
+		TTL:     s.options.TTL,
 	}
 }

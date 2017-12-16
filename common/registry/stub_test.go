@@ -24,7 +24,7 @@ func TestStubReg_Register(t *testing.T) {
 
 	actual, err := GetService("service0", "0")
 	a.NoError(err)
-	a.Equal(srvc, actual)
+	a.Equal([]Service{srvc}, actual)
 
 	for i := 1; i <= 5; i++ {
 		idx := fmt.Sprintf("%d", i)
@@ -55,8 +55,6 @@ func TestStubRemovesMapOnLastInstance(t *testing.T) {
 
 	srvc0 := createService("0")
 	a.NoError(Register(srvc0))
-	createInstance(&srvc0, 1)
-	createInstance(&srvc0, 2)
 	a.NoError(Register(srvc0))
 
 	srvc1 := createService("1")
@@ -65,13 +63,11 @@ func TestStubRemovesMapOnLastInstance(t *testing.T) {
 	srvcs, err := GetServices()
 	a.NoError(err)
 	a.Len(srvcs, 2)
-	a.Len(srvcs[0].Instances, 3)
 
 	a.NoError(Deregister(srvc1))
 	srvcs, err = GetServices()
 	a.NoError(err)
 	a.Len(srvcs, 1)
-	a.Len(srvcs[0].Instances, 3)
 
 	a.NoError(Deregister(srvc0))
 	srvcs, err = GetServices()
@@ -90,18 +86,8 @@ func createService(index string) Service {
 	return Service{
 		Version: index,
 		Name:    "service" + index,
-		Instances: map[string]Instance{
-			"uuid" + index: {
-				IP:   "ip" + index,
-				Port: int(idx),
-				UUID: "uuid" + index,
-			},
-		},
+		UUID:    "uuid" + index,
+		IP:      "ip" + index,
+		Port:    int(idx),
 	}
-}
-
-func createInstance(srvc *Service, idx int) {
-	index := fmt.Sprintf("%d", idx)
-	srvc.AddInstance(Instance{UUID: "uuid" + index, Port: idx, IP: index})
-
 }

@@ -11,7 +11,7 @@ type Options struct {
 	ServiceName    string
 	ServiceVersion string
 	MetricsAddr    string
-	Uuid           string
+	UUID           string
 	TTL            time.Duration
 }
 

@@ -14,33 +14,12 @@ func NewStub() Registry {
 }
 
 func (s *stubReg) Register(srv Service) error {
-	srvKey := key(srv)
-
-	if _, exists := s.services[srvKey]; !exists {
-		s.services[srvKey] = srv
-	}
-
-	for uuid, inst := range srv.Instances {
-		s.services[srvKey].Instances[uuid] = inst
-	}
-
+	s.services[srv.Key()] = srv
 	return nil
 }
 
 func (s *stubReg) Deregister(srv Service) error {
-	srvKey := key(srv)
-	if _, exists := s.services[srvKey]; !exists {
-		return nil
-	}
-
-	for uuid := range srv.Instances {
-		delete(s.services[srvKey].Instances, uuid)
-	}
-
-	if len(s.services[srvKey].Instances) == 0 {
-		delete(s.services, srvKey)
-	}
-
+	delete(s.services, srv.Key())
 	return nil
 }
 
@@ -53,15 +32,19 @@ func (s *stubReg) GetServices() ([]Service, error) {
 	return srvs, nil
 }
 
-func (s *stubReg) GetService(serviceName, version string) (Service, error) {
-	err := ErrServiceDNE
+func (s *stubReg) GetService(serviceName, version string) ([]Service, error) {
+	srvcs := make([]Service, 0)
 	for _, srv := range s.services {
 		if srv.Name == serviceName && srv.Version == version {
-			return srv, nil
+			srvcs = append(srvcs, srv)
 		}
 	}
 
-	return Service{}, err
+	if len(srvcs) <= 0 {
+		return nil, ErrServiceDNE
+	}
+
+	return srvcs, nil
 }
 
 func (s *stubReg) Name() string {

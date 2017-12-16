@@ -1,6 +1,12 @@
 package service
 
-import "google.golang.org/grpc"
+import (
+	"os"
+	"os/signal"
+	"syscall"
+
+	"google.golang.org/grpc"
+)
 
 type Service interface {
 	Serve() error
@@ -9,4 +15,10 @@ type Service interface {
 	GrpcServer() *grpc.Server
 	Register()
 	Deregister()
+}
+
+func CtrlCSig() chan os.Signal {
+	sigs := make(chan os.Signal)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGABRT)
+	return sigs
 }

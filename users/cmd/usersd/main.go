@@ -3,6 +3,8 @@ package main
 import (
 	"flag"
 
+	"time"
+
 	"github.com/while-loop/levit/common/log"
 	"github.com/while-loop/levit/common/registry"
 	libservice "github.com/while-loop/levit/common/service"
@@ -25,12 +27,13 @@ func main() {
 		return
 	}
 
-	registry.Use(registry.NewStub())
+	registry.Use(registry.NewEtcd())
 
 	rpc := libservice.NewGrpcService(libservice.Options{
 		ServiceName:    version.Name,
 		ServiceVersion: version.Version,
 		MetricsAddr:    ":8181",
+		TTL:            5 * time.Second,
 	})
 
 	proto.RegisterUsersServer(rpc.GrpcServer(), service.New(repo.NewMockRepo()))
