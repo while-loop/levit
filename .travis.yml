@@ -4,6 +4,12 @@ go:
   - 1.9
 before_install:
   - go get github.com/mattn/goveralls
+  - apt-get install make
+
+install:
+  - make -C users/ all
+  - usersd -v
+
 script:
   - $HOME/gopath/bin/goveralls -service=travis-ci
 env:
