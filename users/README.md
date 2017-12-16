@@ -23,7 +23,7 @@ Usage
 Note: assuming `$GOPATH/bin` is in your `PATH` env variable.
 
 ```sh
-usersd
+$ usersd
 ```
 
 Changelog
