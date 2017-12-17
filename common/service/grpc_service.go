@@ -119,7 +119,7 @@ func (s *grpcService) Deregister() {
 func metrics(rpc *grpc.Server, httpAddr string) {
 	l, err := net.Listen("tcp", httpAddr)
 	if err != nil {
-		log.Fatal("no metrics for you")
+		log.Fatal("no metrics for you", err)
 		return
 	}
 
