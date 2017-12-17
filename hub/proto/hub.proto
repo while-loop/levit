@@ -1,0 +1,43 @@
+syntax = "proto3";
+
+package proto;
+
+service Hub {
+    rpc Connect (stream HubMessage) returns (stream HubMessage) {
+    }
+}
+
+message HubMessage {
+    uint64 uid = 1;
+    string data = 2;
+    oneof event {
+        EventTyping eventTyping = 3;
+        EventMessage eventMessage = 4;
+        EventUserAdded eventUserAdded = 5;
+        EventUserRemoved eventUserRemoved = 6;
+        EventChannelSeen eventChannelSeen = 7;
+    }
+}
+
+// Start and finish of use typing.
+message EventTyping {
+    bool started = 1;
+}
+
+// Regular message from user
+message EventMessage {
+}
+
+// Group OP
+message EventUserAdded {
+}
+
+// Group OP
+message EventUserRemoved {
+}
+
+// Chat OP. User has entered the chat
+message EventChannelSeen {
+}
+
+
