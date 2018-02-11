@@ -7,4 +7,4 @@ import (
 )
 
 type EventFunc func(conn *Conn, message *proto.HubMessage)
-type Router map[reflect.Type]EventFunc
+type Handler map[reflect.Type]EventFunc

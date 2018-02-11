@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	router[reflect.TypeOf(&proto.HubMessage_EventChannelSeen{})] = eventChannelSeen
+	handler[reflect.TypeOf(&proto.HubMessage_EventChannelSeen{})] = eventChannelSeen
 }
 
 func eventChannelSeen(conn *hub.Conn, message *proto.HubMessage) {

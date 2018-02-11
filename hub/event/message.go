@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	router[reflect.TypeOf(&proto.HubMessage_EventMessage{})] = eventmessage
+	handler[reflect.TypeOf(&proto.HubMessage_EventMessage{})] = eventmessage
 }
 
 func eventmessage(conn *hub.Conn, message *proto.HubMessage) {

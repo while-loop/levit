@@ -56,7 +56,7 @@ func TestConnRecvs(t *testing.T) {
 	defer leaktest.Check(t)()
 	a := require.New(t)
 	mock := stream.NewMock()
-	c := NewConn(nil, mock)
+	c := NewConn(New(Handler{}), mock)
 
 	msg := &proto.HubMessage{}
 	mock.RecvBuf <- msg

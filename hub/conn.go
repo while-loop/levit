@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"time"
 
+	"reflect"
+
 	"github.com/while-loop/levit/common/log"
 	"github.com/while-loop/levit/hub/stream"
 )
@@ -50,8 +52,11 @@ func (c *Conn) readLoop() {
 			return
 		}
 
-		// TODO do router message to handler
-		log.Debug(msg)
+		if fn, exists := c.Parent.EventsHandler[reflect.TypeOf(msg.Event)]; exists {
+			fn(c, msg)
+		} else {
+			log.Error("Unknown message type ", msg.Event)
+		}
 	}
 }
 

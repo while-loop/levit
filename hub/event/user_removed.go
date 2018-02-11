@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	router[reflect.TypeOf(&proto.HubMessage_EventUserRemoved{})] = eventUserRemoved
+	handler[reflect.TypeOf(&proto.HubMessage_EventUserRemoved{})] = eventUserRemoved
 }
 
 func eventUserRemoved(conn *hub.Conn, message *proto.HubMessage) {

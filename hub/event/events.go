@@ -4,8 +4,8 @@ import (
 	"github.com/while-loop/levit/hub"
 )
 
-var router = hub.Router{}
+var handler = hub.Handler{}
 
-func GetRouter() hub.Router {
-	return router
+func GetHandler() hub.Handler {
+	return handler
 }

@@ -12,18 +12,18 @@ const (
 type connFunc func(map[uint64]*Conn)
 
 type Hub struct {
-	stop         chan struct{}
-	closed       chan struct{}
-	connChan     chan connFunc
-	EventsRouter Router
+	stop          chan struct{}
+	closed        chan struct{}
+	connChan      chan connFunc
+	EventsHandler Handler
 }
 
-func New(events Router) *Hub {
+func New(events Handler) *Hub {
 	return &Hub{
-		connChan:     make(chan connFunc, DefaultBufferedChannelSize),
-		stop:         make(chan struct{}),
-		closed:       make(chan struct{}),
-		EventsRouter: events,
+		connChan:      make(chan connFunc, DefaultBufferedChannelSize),
+		stop:          make(chan struct{}),
+		closed:        make(chan struct{}),
+		EventsHandler: events,
 	}
 }
 

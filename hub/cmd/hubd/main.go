@@ -42,7 +42,7 @@ func main() {
 		Port:           int(port),
 	})
 
-	h := hub.New(event.GetRouter())
+	h := hub.New(event.GetHandler())
 	go h.Start()
 	proto.RegisterHubServer(rpc.GrpcServer(), service.New(h))
 	log.Fatal(rpc.Serve())

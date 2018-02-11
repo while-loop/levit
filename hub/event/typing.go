@@ -8,7 +8,7 @@ import (
 )
 
 func init() {
-	router[reflect.TypeOf(&proto.HubMessage_EventTyping{})] = eventTyping
+	handler[reflect.TypeOf(&proto.HubMessage_EventTyping{})] = eventTyping
 }
 
 func eventTyping(conn *hub.Conn, message *proto.HubMessage) {
