@@ -25,6 +25,7 @@ build: clean lint ## build service binary file
 		-X ${PACKAGE}/version.Commit=${COMMIT} \
 		-X ${PACKAGE}/version.BuildTime=${BUILD_TIME}" \
 		-o ${GOPATH}/bin/${TARGET} ./cmd/${TARGET}
+	${SERVICE}d -v
 
 clean: ## remove service bin from $GOPATH/bin
 	@echo "[clean] removing service files"
