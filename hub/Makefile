@@ -9,13 +9,13 @@ BUILD_TIME  := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 IMAGE_NAME  := ${ORG}/${SERVICE}
 PACKAGE 	:= $(shell pwd | sed "s,${GOPATH}/src/,,")
 
-.PHONY: proto get test build cont cont-nc all deploy help clean lint
+.PHONY: proto deps test build cont cont-nc all deploy help clean lint
 .DEFAULT_GOAL := help
 
 help: ## halp
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z_-]+:.*?## / {printf "\033[36m%-15s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
 
-all: get lint test build ## get && test && build
+all: deps lint test build ## get && test && build
 
 build: clean lint ## build service binary file
 	@echo "[build] building go binary"
@@ -39,8 +39,8 @@ cont-c: ## build a cached service container
 deploy: ## deploy lastest built container to docker hub
 	docker push ${IMAGE_NAME}
 
-get: ## get service pkg + test deps
-	@echo "[get] getting go deps"
+deps: ## get service pkg + test deps
+	@echo "[deps] getting go deps"
 	go get -v -t ./...
 
 lint: ## apply golint

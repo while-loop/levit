@@ -9,9 +9,8 @@ before_install:
   - go get -t ./...
 
 install:
-  - make -C users/ all
+  - make all
   - usersd -v
-  - make -C hub/ all
   - hubd -v
 
 script:
