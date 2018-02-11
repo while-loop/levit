@@ -8,7 +8,6 @@ import (
 	"github.com/grpc-ecosystem/go-grpc-prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/while-loop/levit/common/log"
-	"github.com/while-loop/levit/common/registry"
 	"google.golang.org/grpc"
 )
 
@@ -55,7 +54,6 @@ func (s *grpcService) Serve() error {
 	}
 
 	log.Info("Running UsersService gRPC Server ", laddr)
-	s.Register()
 
 	exitCh := make(chan error)
 	go func() {
@@ -69,8 +67,6 @@ func (s *grpcService) Serve() error {
 		select {
 		case err = <-exitCh:
 			log.Info("Server has stopped serving ", err)
-		case <-time.After(s.options.TTL):
-			s.Register()
 		case <-sig:
 			log.Warn("Ctrl+C captured")
 			s.GracefulStop()
@@ -78,42 +74,14 @@ func (s *grpcService) Serve() error {
 		}
 	}
 
-	s.Deregister()
 	return err
 }
 
 func (s *grpcService) GracefulStop() error {
 	log.Infof("Gracefully stopping %s...", s.options.ServiceName)
-	if err := registry.Deregister(s.regService()); err != nil {
-		log.Errorf("Failed to deregister %s: %v", s.options.ServiceName, err)
-	}
 	s.Server.GracefulStop()
 
 	return nil
-}
-
-func (s *grpcService) Register() {
-	srv := s.regService()
-
-	err := registry.Register(srv)
-	if err != nil {
-		log.Errorf("failed to register %s: %v", s.options.ServiceName, err)
-	}
-}
-
-func (s *grpcService) Deregister() {
-	srv := s.regService()
-
-	for {
-		err := registry.Deregister(srv)
-		if err == nil {
-			break
-		}
-
-		log.Errorf("failed to deregister %s: %v", s.options.ServiceName, err)
-		time.Sleep(3 * time.Second)
-		err = registry.Deregister(srv)
-	}
 }
 
 func metrics(rpc *grpc.Server, httpAddr string) {
@@ -128,15 +96,4 @@ func metrics(rpc *grpc.Server, httpAddr string) {
 	m.Handle("/metrics", promhttp.Handler())
 	go http.Serve(l, m)
 	log.Infof("Running metrics %s/metrics", l.Addr())
-}
-
-func (s *grpcService) regService() registry.Service {
-	return registry.Service{
-		Version: s.options.ServiceVersion,
-		Name:    s.options.ServiceName,
-		UUID:    s.options.UUID,
-		Port:    s.options.Port,
-		IP:      s.options.IP,
-		TTL:     s.options.TTL,
-	}
 }

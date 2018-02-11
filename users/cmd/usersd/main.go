@@ -6,7 +6,6 @@ import (
 	"strings"
 
 	"github.com/while-loop/levit/common/log"
-	"github.com/while-loop/levit/common/registry"
 	libservice "github.com/while-loop/levit/common/service"
 	proto "github.com/while-loop/levit/users/proto"
 	"github.com/while-loop/levit/users/repo"
@@ -33,8 +32,6 @@ func main() {
 	if err != nil {
 		log.Fatal(err)
 	}
-
-	registry.Use(registry.NewEtcd())
 
 	rpc := libservice.NewGrpcService(libservice.Options{
 		ServiceName:    version.Name,

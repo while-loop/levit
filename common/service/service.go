@@ -13,8 +13,6 @@ type Service interface {
 	GracefulStop() error
 	Options() Options
 	GrpcServer() *grpc.Server
-	Register()
-	Deregister()
 }
 
 func CtrlCSig() chan os.Signal {
