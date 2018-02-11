@@ -1,10 +1,10 @@
 # service specific vars
-SERVICE     := hub
-VERSION     := 0.0.1
+SERVICE	 := hub
+VERSION	 := 0.0.1
 
-ORG         := levitgo
-TARGET      := ${SERVICE}d
-COMMIT      := $(shell git rev-parse --short HEAD)
+ORG		  := levitgo
+TARGET	  := ${SERVICE}d
+COMMIT	  := $(shell git rev-parse --short HEAD)
 BUILD_TIME  := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 IMAGE_NAME  := ${ORG}/${SERVICE}
 PACKAGE 	:= $(shell pwd | sed "s,${GOPATH}/src/,,")
@@ -25,11 +25,19 @@ build: clean lint ## build service binary file
 		-X ${PACKAGE}/version.Commit=${COMMIT} \
 		-X ${PACKAGE}/version.BuildTime=${BUILD_TIME}" \
 		-o ${GOPATH}/bin/${TARGET} ./cmd/${TARGET}
+
+	@go build \
+		-ldflags "-s -w \
+		-X ${PACKAGE}/version.Version=${VERSION} \
+		-X ${PACKAGE}/version.Commit=${COMMIT} \
+		-X ${PACKAGE}/version.BuildTime=${BUILD_TIME}" \
+		-o ${GOPATH}/bin/${SERVICE} ./cmd/${SERVICE}
+
 	${SERVICE}d -v
 
 clean: ## remove service bin from $GOPATH/bin
 	@echo "[clean] removing service files"
-	rm -f ${GOPATH}/bin/${TARGET}
+	rm -f ${GOPATH}/bin/${SERVICE}*
 
 cont: ## build a non-cached service container
 	docker build -t ${IMAGE_NAME} -t ${IMAGE_NAME}:${VERSION} . --no-cache

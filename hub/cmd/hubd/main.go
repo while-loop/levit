@@ -9,7 +9,7 @@ import (
 	libservice "github.com/while-loop/levit/common/service"
 	"github.com/while-loop/levit/hub"
 	"github.com/while-loop/levit/hub/event"
-	proto "github.com/while-loop/levit/hub/proto"
+	"github.com/while-loop/levit/hub/proto"
 	"github.com/while-loop/levit/hub/service"
 	"github.com/while-loop/levit/hub/version"
 )
@@ -45,5 +45,7 @@ func main() {
 	h := hub.New(event.GetHandler())
 	go h.Start()
 	proto.RegisterHubServer(rpc.GrpcServer(), service.New(h))
-	log.Fatal(rpc.Serve())
+	if err = rpc.Serve(); err != nil {
+		log.Fatal(err)
+	}
 }

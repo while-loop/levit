@@ -3,23 +3,28 @@ package main
 import (
 	"context"
 	"flag"
-	"log"
-
 	"fmt"
-
 	"math/rand"
 	"time"
 
+	"github.com/while-loop/levit/common/log"
 	"github.com/while-loop/levit/hub/proto"
+	"github.com/while-loop/levit/hub/version"
 	"google.golang.org/grpc"
 )
 
 var (
 	raddr = flag.String("raddr", "localhost:8080", "remote address of hub server")
+	v     = flag.Bool("v", false, version.Name+" version")
 )
 
 func main() {
 	flag.Parse()
+	if *v {
+		log.Infof("%s %s %s %s", version.Name, version.Version, version.BuildTime, version.Commit)
+		return
+	}
+
 	rand.Seed(time.Now().Unix())
 	uid := rand.Uint64()
 
@@ -60,6 +65,6 @@ func main() {
 			log.Fatal("unable to recv from server ", err)
 		}
 
-		fmt.Println(msg)
+		log.Debug(msg)
 	}
 }
