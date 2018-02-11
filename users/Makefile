@@ -52,6 +52,8 @@ proto: ## generate protobuf go objects
 	go get github.com/golang/protobuf/protoc-gen-go
 	go generate ./...
 
+release: test cont deploy ## build and deploy a docker container
+
 test: lint ## test service code
 	@echo "[test] running tests w/ cover"
 	go test ./... -cover
