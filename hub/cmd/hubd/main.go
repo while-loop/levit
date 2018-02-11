@@ -20,7 +20,7 @@ func init() {
 
 func main() {
 	v := flag.Bool("v", false, version.Name+" version")
-	laddr := flag.String("laddr", ":8080", version.Name+" version")
+	laddr := flag.String("laddr", "0.0.0.0:8080", version.Name+" version")
 	flag.Parse()
 
 	if *v {
@@ -37,7 +37,7 @@ func main() {
 	rpc := libservice.NewGrpcService(libservice.Options{
 		ServiceName:    version.Name,
 		ServiceVersion: version.Version,
-		MetricsAddr:    ":8181",
+		MetricsAddr:    "0.0.0.0:8181",
 		IP:             parts[0],
 		Port:           int(port),
 	})

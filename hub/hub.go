@@ -30,6 +30,7 @@ func New(events Handler) *Hub {
 func (h *Hub) Register(conn *Conn) {
 	h.connChan <- func(conns map[uint64]*Conn) {
 		conns[conn.UserId] = conn
+		log.Infof("User %d joined hub. %d connected users", conn.UserId, len(conns))
 		// TODO set status to online (online = true)
 	}
 }
@@ -41,6 +42,7 @@ func (h *Hub) Deregister(conn *Conn) {
 		}
 
 		delete(conns, conn.UserId)
+		log.Infof("User %d left hub. %d connected users", conn.UserId, len(conns))
 		// TODO set status to offline (online = false, last_seen = time.Now())
 	}
 }

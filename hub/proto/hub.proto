@@ -26,6 +26,7 @@ message EventTyping {
 
 // Regular message from user
 message EventMessage {
+    string message = 1;
 }
 
 // Group OP

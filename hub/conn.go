@@ -48,7 +48,7 @@ func (c *Conn) readLoop() {
 	for {
 		msg, err = c.s.Recv()
 		if err != nil {
-			log.Errorf("failed read from conn stream %v", err)
+			log.Warnf("failed read from conn stream: %v", err)
 			return
 		}
 
