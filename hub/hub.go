@@ -9,22 +9,18 @@ const (
 	DefaultBufferedChannelSize = 100
 )
 
+type connFunc func(map[uint64]*Conn)
+
 type Hub struct {
-	conns        map[uint64]*Conn
-	register     chan *Conn
-	deregister   chan *Conn
-	broadcast    chan *proto.HubMessage
 	stop         chan struct{}
 	closed       chan struct{}
+	connChan     chan connFunc
 	EventsRouter Router
 }
 
 func New(events Router) *Hub {
 	return &Hub{
-		register:     make(chan *Conn, 1),
-		deregister:   make(chan *Conn, 1),
-		conns:        map[uint64]*Conn{},
-		broadcast:    make(chan *proto.HubMessage, DefaultBufferedChannelSize),
+		connChan:     make(chan connFunc, DefaultBufferedChannelSize),
 		stop:         make(chan struct{}),
 		closed:       make(chan struct{}),
 		EventsRouter: events,
@@ -32,62 +28,58 @@ func New(events Router) *Hub {
 }
 
 func (h *Hub) Register(conn *Conn) {
-	h.register <- conn
+	h.connChan <- func(conns map[uint64]*Conn) {
+		conns[conn.UserId] = conn
+		// TODO set status to online (online = true)
+	}
 }
 
 func (h *Hub) Deregister(conn *Conn) {
-	h.deregister <- conn
+	h.connChan <- func(conns map[uint64]*Conn) {
+		if _, exists := conns[conn.UserId]; !exists {
+			return
+		}
+
+		delete(conns, conn.UserId)
+		// TODO set status to offline (online = false, last_seen = time.Now())
+	}
 }
 
 func (h *Hub) Broadcast(message *proto.HubMessage) {
-	h.broadcast <- message
-}
-
-func (h *Hub) Start() {
-	defer func() {
-		h.closed <- struct{}{}
-	}()
-
-	log.Info("Starting Hub loop")
-	for {
-		select {
-		case conn := <-h.register:
-			h.conns[conn.UserId] = conn
-			// TODO set status to online (online = true)
-		case conn := <-h.deregister:
-			if _, exists := h.conns[conn.UserId]; !exists {
+	h.connChan <- func(conns map[uint64]*Conn) {
+		for _, conn := range conns {
+			if !conn.Contains(message) {
 				continue
 			}
 
-			delete(h.conns, conn.UserId)
-			// TODO set status to offline (online = false, last_seen = time.Now())
-
-		case message := <-h.broadcast:
-			for uid, conn := range h.conns {
-				if !conn.Contains(message) {
-					continue
+			go func(conn *Conn) {
+				if err := conn.Send(message); err != nil {
+					log.Error(err)
 				}
+			}(conn)
+		}
+	}
+}
 
-				select {
-				case conn.Send() <- message:
-				default:
-					log.Errorf("Failed to send message to user %d: %s", uid, message)
-				}
-			}
+func (h *Hub) Start() {
+	conns := map[uint64]*Conn{}
+	defer func() {
+		h.closed <- struct{}{}
+	}()
+	log.Info("Starting Hub loop")
+	for {
+		select {
+		case fn := <-h.connChan:
+			fn(conns)
 		case <-h.stop:
 			log.Warn("Hub recvd stop from channel")
 			uids := make([]uint64, 0)
 
 			// close conns fast so user doesn't miss out on unsent messages
-			for _, c := range h.conns {
+			for _, c := range conns {
 				uids = append(uids, c.UserId)
-				c.Close()
-			}
-
-			// close conns fast so user doesn't miss out on unsent messages
-			for uid := range uids {
-				log.Debug(uid)
-				// TODO set status to offline (online = false, last_seen = time.Now())
+				go c.Close()
+				// go setOffline(c.UserId) // TODO set status to offline (online = false, last_seen = time.Now())
 			}
 
 			return
@@ -97,7 +89,6 @@ func (h *Hub) Start() {
 
 func (h *Hub) Stop() {
 	h.stop <- struct{}{}
-
 	// wait for all connections to shutdown
 	<-h.closed
 }

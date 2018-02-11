@@ -3,21 +3,26 @@ package hub
 import (
 	"github.com/while-loop/levit/hub/proto"
 
+	"math/rand"
+	"time"
+
 	"github.com/while-loop/levit/common/log"
 	"github.com/while-loop/levit/hub/stream"
 )
 
+var (
+	r = rand.New(rand.NewSource(time.Now().Unix()))
+)
+
 type Conn struct {
 	UserId uint64
-	in     chan *proto.HubMessage
 	Parent *Hub
 	s      stream.Stream
 }
 
 func NewConn(hub *Hub, s stream.Stream) *Conn {
 	c := &Conn{
-		UserId: 0,
-		in:     make(chan *proto.HubMessage, DefaultBufferedChannelSize),
+		UserId: r.Uint64(),
 		Parent: hub,
 		s:      s,
 	}
@@ -25,12 +30,11 @@ func NewConn(hub *Hub, s stream.Stream) *Conn {
 	return c
 }
 
-func (c *Conn) Send() chan<- *proto.HubMessage {
-	return c.in
+func (c *Conn) Send(message *proto.HubMessage) error {
+	return c.s.Send(message)
 }
 
 func (c *Conn) Loop() {
-	go c.writeLoop()
 	c.readLoop()
 	c.Close()
 }
@@ -51,22 +55,10 @@ func (c *Conn) readLoop() {
 	}
 }
 
-func (c *Conn) writeLoop() {
-	defer c.s.Close()
-
-	for msg := range c.in {
-		err := c.s.Send(msg)
-		if err != nil {
-			log.Error("failed to send payload to client")
-			break
-		}
-	}
-}
-
 func (c *Conn) Close() {
-	close(c.in)
+	c.s.Close()
 }
 
-func (c *Conn) Contains(message interface{}) bool {
+func (c *Conn) Contains(message *proto.HubMessage) bool {
 	return true
 }

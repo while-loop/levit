@@ -32,7 +32,7 @@ func TestConnSendsToChannel(t *testing.T) {
 	mock := stream.NewMock().(*stream.MockStream)
 	c := NewConn(nil, mock)
 	msg := &proto.HubMessage{}
-	c.Send() <- msg
+	c.Send(msg)
 
 	// make sure message doesnt send before starting Loop()
 	select {
@@ -60,7 +60,7 @@ func TestConnErrorInSendEndsConn(t *testing.T) {
 
 	time.AfterFunc(100*time.Millisecond, func() {
 		mock.SendErr = fmt.Errorf("send error")
-		c.Send() <- nil
+		c.Send(nil)
 		time.AfterFunc(1000*time.Millisecond, func() {
 			mock.Close()
 			a.FailNow("failed to get msg")
