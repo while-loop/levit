@@ -1,10 +1,7 @@
 package service
 
 import (
-	"fmt"
-
-	"github.com/while-loop/levit/common/log"
-	proto "github.com/while-loop/levit/users/proto"
+	pb "github.com/while-loop/levit/users/proto"
 	"github.com/while-loop/levit/users/repo"
 	"golang.org/x/net/context"
 )
@@ -12,37 +9,50 @@ import (
 //go:generate protoc -I ../proto --go_out=plugins=grpc:../proto ../proto/users.proto
 
 type UsersService struct {
-	repo repo.UsersRepository
+	repo    repo.UsersRepository
+	tknSrvc *TokenService
 }
 
-// TODO input pre-processing
-
-func (c *UsersService) Create(ctx context.Context, u *proto.User) (*proto.User, error) {
-	return c.Update(ctx, u)
+func New(repository repo.UsersRepository, service *TokenService) pb.UsersServer {
+	return &UsersService{repository, service}
 }
 
-func (c *UsersService) GetAll(ctx context.Context, req *proto.GetRequest) (*proto.UsersArr, error) {
-	us, err := c.repo.GetUsers(req.Ids...)
+func (u *UsersService) Create(ctx context.Context, req *pb.User) (*pb.Response, error) {
+	return u.Update(ctx, req)
+}
+
+func (u *UsersService) Get(ctx context.Context, req *pb.User) (*pb.Response, error) {
+	user, err := u.repo.Get(req.Id)
 	if err != nil {
 		return nil, err
 	}
 
-	return &proto.UsersArr{Users: us}, nil
+	return &pb.Response{User: user}, nil
 }
 
-func (c *UsersService) Get(ctx context.Context, req *proto.GetRequest) (*proto.User, error) {
-	log.Debugf("UsersService:Get %#v", req)
-	if len(req.Ids) == 1 {
-		return c.repo.GetUser(req.Ids[0])
+func (u *UsersService) Update(ctx context.Context, req *pb.User) (*pb.Response, error) {
+	user, err := u.repo.Update(req)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, fmt.Errorf("bad request")
+	return &pb.Response{User: user}, nil
+
 }
 
-func (c *UsersService) Update(ctx context.Context, req *proto.User) (*proto.User, error) {
-	return c.repo.UpdateUser(req)
+func (u *UsersService) GetAll(ctx context.Context, req *pb.GetRequest) (*pb.Response, error) {
+	users, err := u.repo.GetAll(req.Ids...)
+	if err != nil {
+		return nil, err
+	}
+
+	return &pb.Response{Users: users}, nil
 }
 
-func New(repository repo.UsersRepository) proto.UsersServer {
-	return &UsersService{repository}
+func (u *UsersService) Auth(ctx context.Context, ser *pb.User) (*pb.Token, error) {
+	panic("implement me")
+}
+
+func (u *UsersService) ValidateToken(ctx context.Context, req *pb.Token) (*pb.Token, error) {
+	panic("implement me")
 }

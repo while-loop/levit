@@ -7,13 +7,17 @@ option java_package = "com.github.whileloop.levit.proto";
 option java_outer_classname = "Users";
 
 service Users {
-    rpc Get (GetRequest) returns (User) {
+    rpc Create (User) returns (Response) {
     }
-    rpc GetAll (GetRequest) returns (UsersArr) {
+    rpc Get (User) returns (Response) {
     }
-    rpc Update (User) returns (User) {
+    rpc GetAll (GetRequest) returns (Response) {
     }
-    rpc Create (User) returns (User) {
+    rpc Update (User) returns (Response) {
+    }
+    rpc Auth (User) returns (Token) {
+    }
+    rpc ValidateToken (Token) returns (Token) {
     }
 }
 
@@ -26,13 +30,17 @@ message User {
     string first = 2;
     string last = 3;
     int64 created_at = 4;
-    bool deleted = 5;
+    int64 deleted_at = 5;
     string google_id = 6;
     string facebook_id = 7;
 }
 
-message UsersArr {
-    repeated User users = 1;
+message Token {
+    string token = 1;
+    bool valid = 2;
 }
 
-
+message Response {
+    User user = 1;
+    repeated User users = 2;
+}

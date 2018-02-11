@@ -1,10 +1,10 @@
 # service specific vars
-SERVICE     := users
-VERSION     := 0.0.1
+SERVICE	 := users
+VERSION	 := 0.0.1
 
-ORG         := levitgo
-TARGET      := ${SERVICE}d
-COMMIT      := $(shell git rev-parse --short HEAD)
+ORG		 := levitgo
+TARGET	  := ${SERVICE}d
+COMMIT	  := $(shell git rev-parse --short HEAD)
 BUILD_TIME  := $(shell date -u '+%Y-%m-%d_%H:%M:%S')
 IMAGE_NAME  := ${ORG}/${SERVICE}
 PACKAGE 	:= $(shell pwd | sed "s,${GOPATH}/src/,,")
@@ -58,3 +58,10 @@ release: test cont deploy ## build and deploy a docker container
 test: lint ## test service code
 	@echo "[test] running tests w/ cover"
 	go test ./... -cover
+
+db: ## make a test docker mysql container
+	docker run --name mysql -d  -e MYSQL_ROOT_PASSWORD=pass \
+								-e MYSQL_DATABASE=test \
+								-e MYSQL_USER=user \
+								-e MYSQL_USER=pass \
+							mysql:8.0.3

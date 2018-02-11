@@ -1,12 +1,14 @@
-sudo: false
+sudo: required
 language: go
+
+services:
+  - docker
+
 go:
   - 1.9
 before_install:
   - go get github.com/mattn/goveralls
-  - sudo apt-get -qq update
-  - sudo apt-get install -y make
-  - go get -t ./...
+  - sudo apt-get -qq update && sudo apt-get install -y make
 
 install:
   - make all

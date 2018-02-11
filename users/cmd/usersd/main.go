@@ -5,6 +5,8 @@ import (
 	"strconv"
 	"strings"
 
+	"os"
+
 	"github.com/while-loop/levit/common/log"
 	libservice "github.com/while-loop/levit/common/service"
 	proto "github.com/while-loop/levit/users/proto"
@@ -16,6 +18,13 @@ import (
 func init() {
 	log.Infof("%s %s %s %s", version.Name, version.Version, version.BuildTime, version.Commit)
 }
+
+const (
+	DbHost = "DB_HOST"
+	DnUser = "DB_USER"
+	DbPass = "DB_PASS"
+	DbName = "DB_NAME"
+)
 
 func main() {
 	v := flag.Bool("v", false, version.Name+" version")
@@ -41,6 +50,16 @@ func main() {
 		Port:           int(port),
 	})
 
-	proto.RegisterUsersServer(rpc.GrpcServer(), service.New(repo.NewMockRepo()))
+	tkn := service.NewTokenService("secret")
+
+	db, err := repo.CreateConnection(os.Getenv(DbHost), os.Getenv(DnUser), os.Getenv(DbPass), os.Getenv(DbName))
+	if err != nil {
+		log.Fatal("Unable to connect to db", db)
+	}
+	defer db.Close()
+
+	srvc := service.New(repo.NewMySql(db), tkn)
+
+	proto.RegisterUsersServer(rpc.GrpcServer(), srvc)
 	log.Fatal(rpc.Serve())
 }

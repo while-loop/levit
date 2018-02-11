@@ -10,7 +10,8 @@ It is generated from these files:
 It has these top-level messages:
 	GetRequest
 	User
-	UsersArr
+	Token
+	Response
 */
 package users
 
@@ -114,16 +115,48 @@ func (m *User) GetFacebookId() string {
 	return ""
 }
 
-type UsersArr struct {
-	Users []*User `protobuf:"bytes,1,rep,name=users" json:"users,omitempty"`
+type Token struct {
+	Token string `protobuf:"bytes,1,opt,name=token" json:"token,omitempty"`
+	Valid bool   `protobuf:"varint,2,opt,name=valid" json:"valid,omitempty"`
 }
 
-func (m *UsersArr) Reset()                    { *m = UsersArr{} }
-func (m *UsersArr) String() string            { return proto.CompactTextString(m) }
-func (*UsersArr) ProtoMessage()               {}
-func (*UsersArr) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+func (m *Token) Reset()                    { *m = Token{} }
+func (m *Token) String() string            { return proto.CompactTextString(m) }
+func (*Token) ProtoMessage()               {}
+func (*Token) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
 
-func (m *UsersArr) GetUsers() []*User {
+func (m *Token) GetToken() string {
+	if m != nil {
+		return m.Token
+	}
+	return ""
+}
+
+func (m *Token) GetValid() bool {
+	if m != nil {
+		return m.Valid
+	}
+	return false
+}
+
+type Response struct {
+	User  *User   `protobuf:"bytes,1,opt,name=user" json:"user,omitempty"`
+	Users []*User `protobuf:"bytes,2,rep,name=users" json:"users,omitempty"`
+}
+
+func (m *Response) Reset()                    { *m = Response{} }
+func (m *Response) String() string            { return proto.CompactTextString(m) }
+func (*Response) ProtoMessage()               {}
+func (*Response) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+func (m *Response) GetUser() *User {
+	if m != nil {
+		return m.User
+	}
+	return nil
+}
+
+func (m *Response) GetUsers() []*User {
 	if m != nil {
 		return m.Users
 	}
@@ -133,7 +166,8 @@ func (m *UsersArr) GetUsers() []*User {
 func init() {
 	proto.RegisterType((*GetRequest)(nil), "users.GetRequest")
 	proto.RegisterType((*User)(nil), "users.User")
-	proto.RegisterType((*UsersArr)(nil), "users.UsersArr")
+	proto.RegisterType((*Token)(nil), "users.Token")
+	proto.RegisterType((*Response)(nil), "users.Response")
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -147,10 +181,12 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Users service
 
 type UsersClient interface {
-	Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*User, error)
-	GetAll(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*UsersArr, error)
-	Update(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error)
-	Create(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error)
+	Create(ctx context.Context, in *User, opts ...grpc.CallOption) (*Response, error)
+	Get(ctx context.Context, in *User, opts ...grpc.CallOption) (*Response, error)
+	Update(ctx context.Context, in *User, opts ...grpc.CallOption) (*Response, error)
+	GetAll(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Response, error)
+	Auth(ctx context.Context, in *User, opts ...grpc.CallOption) (*Token, error)
+	ValidateToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Token, error)
 }
 
 type usersClient struct {
@@ -161,8 +197,17 @@ func NewUsersClient(cc *grpc.ClientConn) UsersClient {
 	return &usersClient{cc}
 }
 
-func (c *usersClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *usersClient) Create(ctx context.Context, in *User, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := grpc.Invoke(ctx, "/users.Users/Create", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) Get(ctx context.Context, in *User, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := grpc.Invoke(ctx, "/users.Users/Get", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
@@ -170,17 +215,8 @@ func (c *usersClient) Get(ctx context.Context, in *GetRequest, opts ...grpc.Call
 	return out, nil
 }
 
-func (c *usersClient) GetAll(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*UsersArr, error) {
-	out := new(UsersArr)
-	err := grpc.Invoke(ctx, "/users.Users/GetAll", in, out, c.cc, opts...)
-	if err != nil {
-		return nil, err
-	}
-	return out, nil
-}
-
-func (c *usersClient) Update(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
+func (c *usersClient) Update(ctx context.Context, in *User, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
 	err := grpc.Invoke(ctx, "/users.Users/Update", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
@@ -188,9 +224,27 @@ func (c *usersClient) Update(ctx context.Context, in *User, opts ...grpc.CallOpt
 	return out, nil
 }
 
-func (c *usersClient) Create(ctx context.Context, in *User, opts ...grpc.CallOption) (*User, error) {
-	out := new(User)
-	err := grpc.Invoke(ctx, "/users.Users/Create", in, out, c.cc, opts...)
+func (c *usersClient) GetAll(ctx context.Context, in *GetRequest, opts ...grpc.CallOption) (*Response, error) {
+	out := new(Response)
+	err := grpc.Invoke(ctx, "/users.Users/GetAll", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) Auth(ctx context.Context, in *User, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
+	err := grpc.Invoke(ctx, "/users.Users/Auth", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *usersClient) ValidateToken(ctx context.Context, in *Token, opts ...grpc.CallOption) (*Token, error) {
+	out := new(Token)
+	err := grpc.Invoke(ctx, "/users.Users/ValidateToken", in, out, c.cc, opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -200,18 +254,38 @@ func (c *usersClient) Create(ctx context.Context, in *User, opts ...grpc.CallOpt
 // Server API for Users service
 
 type UsersServer interface {
-	Get(context.Context, *GetRequest) (*User, error)
-	GetAll(context.Context, *GetRequest) (*UsersArr, error)
-	Update(context.Context, *User) (*User, error)
-	Create(context.Context, *User) (*User, error)
+	Create(context.Context, *User) (*Response, error)
+	Get(context.Context, *User) (*Response, error)
+	Update(context.Context, *User) (*Response, error)
+	GetAll(context.Context, *GetRequest) (*Response, error)
+	Auth(context.Context, *User) (*Token, error)
+	ValidateToken(context.Context, *Token) (*Token, error)
 }
 
 func RegisterUsersServer(s *grpc.Server, srv UsersServer) {
 	s.RegisterService(&_Users_serviceDesc, srv)
 }
 
+func _Users_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(User)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).Create(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/users.Users/Create",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).Create(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _Users_Get_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
+	in := new(User)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -223,25 +297,7 @@ func _Users_Get_Handler(srv interface{}, ctx context.Context, dec func(interface
 		FullMethod: "/users.Users/Get",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServer).Get(ctx, req.(*GetRequest))
-	}
-	return interceptor(ctx, in, info, handler)
-}
-
-func _Users_GetAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(GetRequest)
-	if err := dec(in); err != nil {
-		return nil, err
-	}
-	if interceptor == nil {
-		return srv.(UsersServer).GetAll(ctx, in)
-	}
-	info := &grpc.UnaryServerInfo{
-		Server:     srv,
-		FullMethod: "/users.Users/GetAll",
-	}
-	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServer).GetAll(ctx, req.(*GetRequest))
+		return srv.(UsersServer).Get(ctx, req.(*User))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -264,20 +320,56 @@ func _Users_Update_Handler(srv interface{}, ctx context.Context, dec func(interf
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Users_Create_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _Users_GetAll_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).GetAll(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/users.Users/GetAll",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).GetAll(ctx, req.(*GetRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_Auth_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(User)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(UsersServer).Create(ctx, in)
+		return srv.(UsersServer).Auth(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/users.Users/Create",
+		FullMethod: "/users.Users/Auth",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(UsersServer).Create(ctx, req.(*User))
+		return srv.(UsersServer).Auth(ctx, req.(*User))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Users_ValidateToken_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Token)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UsersServer).ValidateToken(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/users.Users/ValidateToken",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UsersServer).ValidateToken(ctx, req.(*Token))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -287,20 +379,28 @@ var _Users_serviceDesc = grpc.ServiceDesc{
 	HandlerType: (*UsersServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Get",
-			Handler:    _Users_Get_Handler,
+			MethodName: "Create",
+			Handler:    _Users_Create_Handler,
 		},
 		{
-			MethodName: "GetAll",
-			Handler:    _Users_GetAll_Handler,
+			MethodName: "Get",
+			Handler:    _Users_Get_Handler,
 		},
 		{
 			MethodName: "Update",
 			Handler:    _Users_Update_Handler,
 		},
 		{
-			MethodName: "Create",
-			Handler:    _Users_Create_Handler,
+			MethodName: "GetAll",
+			Handler:    _Users_GetAll_Handler,
+		},
+		{
+			MethodName: "Auth",
+			Handler:    _Users_Auth_Handler,
+		},
+		{
+			MethodName: "ValidateToken",
+			Handler:    _Users_ValidateToken_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
@@ -310,26 +410,30 @@ var _Users_serviceDesc = grpc.ServiceDesc{
 func init() { proto.RegisterFile("users.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 327 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x7c, 0x51, 0xcb, 0x4a, 0x2b, 0x41,
-	0x10, 0x4d, 0x67, 0x1e, 0x49, 0x6a, 0xe0, 0x3e, 0x8a, 0xbb, 0x68, 0xae, 0xa8, 0xe3, 0x10, 0x70,
-	0x40, 0x9c, 0x45, 0xfc, 0x82, 0xc4, 0x45, 0xc8, 0x4e, 0x06, 0xb2, 0x0e, 0x93, 0x74, 0x25, 0x69,
-	0x6c, 0xe9, 0x38, 0x5d, 0xd1, 0x9f, 0x72, 0xef, 0xef, 0xc9, 0xf4, 0x24, 0x18, 0x44, 0xdc, 0xd5,
-	0x79, 0x74, 0x51, 0xe7, 0x34, 0x24, 0x7b, 0x47, 0xb5, 0x2b, 0x76, 0xb5, 0x65, 0x8b, 0x91, 0x07,
-	0xd9, 0x05, 0xc0, 0x94, 0xb8, 0xa4, 0xe7, 0x3d, 0x39, 0xc6, 0x3f, 0x10, 0x68, 0xe5, 0xa4, 0x48,
-	0x83, 0x3c, 0x2c, 0x9b, 0x31, 0x7b, 0x17, 0x10, 0xce, 0x1d, 0xd5, 0xf8, 0x0b, 0xba, 0x5a, 0x49,
-	0x91, 0x8a, 0x3c, 0x2c, 0xbb, 0x5a, 0xe1, 0x3f, 0x88, 0xd6, 0xba, 0x76, 0x2c, 0xbb, 0xa9, 0xc8,
-	0x07, 0x65, 0x0b, 0x10, 0x21, 0x34, 0x95, 0x63, 0x19, 0x78, 0xd2, 0xcf, 0x78, 0x0e, 0xb0, 0xaa,
-	0xa9, 0x62, 0x52, 0x8b, 0x8a, 0x65, 0x98, 0x8a, 0x3c, 0x28, 0x07, 0x07, 0x66, 0xcc, 0x28, 0xa1,
-	0xa7, 0xc8, 0x10, 0x93, 0x92, 0x51, 0x2a, 0xf2, 0x7e, 0x79, 0x84, 0x78, 0x06, 0x83, 0x8d, 0xb5,
-	0x1b, 0x43, 0x0b, 0xad, 0x64, 0xec, 0x37, 0xf6, 0x5b, 0x62, 0xa6, 0xf0, 0x12, 0x92, 0x75, 0xb5,
-	0xa2, 0xa5, 0xb5, 0x8f, 0x8d, 0xdc, 0xf3, 0x32, 0x1c, 0xa9, 0x99, 0xca, 0x6e, 0xa1, 0xdf, 0x1c,
-	0xee, 0xc6, 0x75, 0x8d, 0x57, 0xd0, 0xc6, 0xf5, 0xc9, 0x92, 0x51, 0x52, 0xb4, 0x4d, 0x34, 0x7a,
-	0xd9, 0x2a, 0xa3, 0x37, 0x01, 0x91, 0xf7, 0xe3, 0x35, 0x04, 0x53, 0x62, 0xfc, 0x7b, 0x30, 0x7d,
-	0xd6, 0xf3, 0xff, 0xf4, 0x5d, 0xd6, 0xc1, 0x02, 0xe2, 0x29, 0xf1, 0xd8, 0x98, 0xef, 0xbc, 0xbf,
-	0x4f, 0xbc, 0xcd, 0x0d, 0x59, 0x07, 0x87, 0x10, 0xcf, 0x77, 0xaa, 0x62, 0xc2, 0xd3, 0x45, 0x5f,
-	0xb7, 0x0e, 0x21, 0xbe, 0xf7, 0xe5, 0xfc, 0xe4, 0x9a, 0xdc, 0x40, 0xba, 0xb2, 0x4f, 0xc5, 0x46,
-	0xf3, 0x76, 0xbf, 0x2c, 0x5e, 0xb7, 0xda, 0x90, 0xb1, 0x76, 0x57, 0x18, 0x7a, 0xd1, 0xdc, 0x7e,
-	0xf1, 0xa4, 0xcd, 0xf3, 0x20, 0x96, 0xb1, 0xc7, 0x77, 0x1f, 0x01, 0x00, 0x00, 0xff, 0xff, 0x69,
-	0x4f, 0xcc, 0xc5, 0x01, 0x02, 0x00, 0x00,
+	// 393 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0x8c, 0x92, 0xdd, 0x6e, 0xd3, 0x40,
+	0x10, 0x85, 0xbb, 0xfe, 0x6b, 0x32, 0xe1, 0x77, 0xc4, 0xc5, 0x0a, 0x04, 0x35, 0x46, 0x48, 0x96,
+	0x10, 0xbe, 0x68, 0x9f, 0x20, 0xe5, 0x22, 0xea, 0x0d, 0x42, 0x2b, 0xca, 0x6d, 0xe5, 0x64, 0xa7,
+	0xc9, 0xaa, 0x4b, 0x37, 0x78, 0x27, 0xe5, 0x0d, 0x78, 0x25, 0x5e, 0x0f, 0xed, 0xae, 0x23, 0x68,
+	0x84, 0x04, 0x77, 0xf3, 0x9d, 0x73, 0x32, 0x19, 0x1f, 0x1b, 0x66, 0x3b, 0x4f, 0x83, 0xef, 0xb6,
+	0x83, 0x63, 0x87, 0x65, 0x84, 0xe6, 0x15, 0xc0, 0x82, 0x58, 0xd1, 0xb7, 0x1d, 0x79, 0xc6, 0x27,
+	0x90, 0x1b, 0xed, 0xa5, 0xa8, 0xf3, 0xb6, 0x50, 0x61, 0x6c, 0x7e, 0x0a, 0x28, 0x2e, 0x3d, 0x0d,
+	0xf8, 0x08, 0x32, 0xa3, 0xa5, 0xa8, 0x45, 0x5b, 0xa8, 0xcc, 0x68, 0x7c, 0x06, 0xe5, 0xb5, 0x19,
+	0x3c, 0xcb, 0xac, 0x16, 0xed, 0x54, 0x25, 0x40, 0x84, 0xc2, 0xf6, 0x9e, 0x65, 0x1e, 0xc5, 0x38,
+	0xe3, 0x4b, 0x80, 0xd5, 0x40, 0x3d, 0x93, 0xbe, 0xea, 0x59, 0x16, 0xb5, 0x68, 0x73, 0x35, 0x1d,
+	0x95, 0x39, 0xa3, 0x84, 0x63, 0x4d, 0x96, 0x98, 0xb4, 0x2c, 0x6b, 0xd1, 0x4e, 0xd4, 0x1e, 0xf1,
+	0x05, 0x4c, 0xd7, 0xce, 0xad, 0x2d, 0x5d, 0x19, 0x2d, 0xab, 0xb8, 0x71, 0x92, 0x84, 0x0b, 0x8d,
+	0x27, 0x30, 0xbb, 0xee, 0x57, 0xb4, 0x74, 0xee, 0x26, 0xd8, 0xc7, 0xd1, 0x86, 0xbd, 0x74, 0xa1,
+	0x9b, 0x33, 0x28, 0x3f, 0xbb, 0x1b, 0xba, 0x0d, 0x97, 0x72, 0x18, 0xe2, 0xf1, 0x53, 0x95, 0x20,
+	0xa8, 0x77, 0xbd, 0x35, 0x3a, 0xde, 0x3f, 0x51, 0x09, 0x9a, 0x8f, 0x30, 0x51, 0xe4, 0xb7, 0xee,
+	0xd6, 0x13, 0x9e, 0x40, 0x11, 0x3a, 0x8a, 0x3f, 0x9b, 0x9d, 0xce, 0xba, 0xd4, 0x5e, 0x28, 0x43,
+	0x45, 0x03, 0x5f, 0x43, 0x2a, 0x51, 0x66, 0x75, 0x7e, 0x98, 0x48, 0xce, 0xe9, 0x8f, 0x0c, 0xca,
+	0xc0, 0x1e, 0x5b, 0xa8, 0x3e, 0xc4, 0x67, 0xc6, 0x3f, 0x73, 0xcf, 0x1f, 0x8f, 0xb0, 0xff, 0xd7,
+	0xe6, 0x08, 0xdf, 0x42, 0xbe, 0x20, 0xfe, 0x67, 0xac, 0x85, 0xea, 0x72, 0xab, 0xff, 0x67, 0x61,
+	0x07, 0xd5, 0x82, 0x78, 0x6e, 0x2d, 0x3e, 0x1d, 0xcd, 0xdf, 0xaf, 0xfc, 0x6f, 0xf9, 0x37, 0x50,
+	0xcc, 0x77, 0xbc, 0xb9, 0xbf, 0xf7, 0xc1, 0x08, 0xb1, 0xd3, 0xe6, 0x08, 0xdf, 0xc3, 0xc3, 0x2f,
+	0xa1, 0xb2, 0x9e, 0x29, 0xd5, 0x7c, 0x2f, 0x70, 0x18, 0x3f, 0x7f, 0x07, 0xf5, 0xca, 0x7d, 0xed,
+	0xd6, 0x86, 0x37, 0xbb, 0x65, 0xf7, 0x7d, 0x63, 0x2c, 0x59, 0xe7, 0xb6, 0x9d, 0xa5, 0x3b, 0xc3,
+	0xe9, 0x93, 0x3c, 0x4f, 0x4d, 0x7d, 0x12, 0xcb, 0x2a, 0xf2, 0xd9, 0xaf, 0x00, 0x00, 0x00, 0xff,
+	0xff, 0xbd, 0xe3, 0xb1, 0xfe, 0xb1, 0x02, 0x00, 0x00,
 }
