@@ -47,7 +47,7 @@ func (m *MockStream) Close() error {
 	return nil
 }
 
-func NewMock() Stream {
+func NewMock() *MockStream {
 	return &MockStream{
 		Id:      r.Uint64(),
 		RecvBuf: make(chan *proto.HubMessage, 100),

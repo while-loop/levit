@@ -11,7 +11,7 @@ import (
 
 func TestMockSend(t *testing.T) {
 	a := require.New(t)
-	m := NewMock().(*MockStream)
+	m := NewMock()
 	ms := []*proto.HubMessage{{Uid: 5}, {Uid: 6}}
 
 	time.AfterFunc(1000*time.Millisecond, func() {
@@ -29,7 +29,7 @@ func TestMockSend(t *testing.T) {
 
 func TestMockRecv(t *testing.T) {
 	a := require.New(t)
-	m := NewMock().(*MockStream)
+	m := NewMock()
 
 	time.AfterFunc(1000*time.Millisecond, func() {
 		a.FailNow("timeout reached")
