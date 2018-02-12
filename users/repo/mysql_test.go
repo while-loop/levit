@@ -9,12 +9,17 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"github.com/while-loop/levit/common/test"
 	"gopkg.in/ory-am/dockertest.v3"
 )
 
 var db *gorm.DB
 
 func TestMain(m *testing.M) {
+	if !test.HasDockerInstalled() {
+		os.Exit(m.Run())
+	}
+
 	pool, err := dockertest.NewPool("")
 	if err != nil {
 		log.Fatalf("Could not connect to docker: %s", err)
@@ -53,5 +58,9 @@ func TestMain(m *testing.M) {
 }
 
 func TestMySqlImpl(t *testing.T) {
+	if !test.HasDockerInstalled() {
+		t.Skip("skipping mysql test, docker not installed")
+	}
+
 	testImpl(t, NewMySql(db))
 }
