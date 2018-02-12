@@ -20,17 +20,20 @@ func init() {
 }
 
 const (
-	DbHost = "DB_HOST"
-	DnUser = "DB_USER"
-	DbPass = "DB_PASS"
-	DbName = "DB_NAME"
+	DbHost    = "DB_HOST"
+	DnUser    = "DB_USER"
+	DbPass    = "DB_PASS"
+	DbName    = "DB_NAME"
+	JwtSecret = "JWT_SECRET"
+)
+
+var (
+	v     = flag.Bool("v", false, version.Name+" version")
+	laddr = flag.String("laddr", ":8080", version.Name+" version")
 )
 
 func main() {
-	v := flag.Bool("v", false, version.Name+" version")
-	laddr := flag.String("laddr", ":8080", version.Name+" version")
 	flag.Parse()
-
 	if *v {
 		// version is printed in init()
 		return
@@ -50,7 +53,7 @@ func main() {
 		Port:           int(port),
 	})
 
-	tkn := service.NewTokenService("secret")
+	tkn := service.NewTokenService(os.Getenv(JwtSecret))
 
 	db, err := repo.CreateConnection(os.Getenv(DbHost), os.Getenv(DnUser), os.Getenv(DbPass), os.Getenv(DbName))
 	if err != nil {
