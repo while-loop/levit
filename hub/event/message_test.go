@@ -30,7 +30,7 @@ func TestMessage(t *testing.T) {
 
 	GetHandler()[reflect.TypeOf(&proto.HubMessage_EventMessage{})](c, msg)
 
-	assert.True(t, test.EqualsWithinTimeout(100*time.Millisecond, func() bool {
-		return len(m.SendBuf) == 1 && assert.Equal(t, msg, m.SendBuf[0])
+	assert.True(t, test.RanWithinTimeout(100*time.Millisecond, func() {
+		assert.Equal(t, msg, <-m.SendBuf)
 	}))
 }
