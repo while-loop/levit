@@ -1,4 +1,4 @@
-Levit
+Levit (Early Production Prototype)
 =====
 
 Social media platform created in Go.
